@@ -1,0 +1,10 @@
+// Cloudflare settings. The site is plain static files: `npm run build` writes them to dist/,
+// and `npx wrangler deploy` uploads that folder. _headers and _redirects in public/ still apply.
+{
+  "name": "gorrrbb-site",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "404-page"
+  }
+}
