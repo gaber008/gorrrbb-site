@@ -1,0 +1,35 @@
+# Pages CMS (https://pagescms.org) — a free web editor for this site.
+# Sign in at app.pagescms.org with GitHub and open this repo.
+media:
+  input: src/content
+  output: .
+content:
+  - name: yearbooks
+    label: Yearbooks
+    type: collection
+    path: src/content/yearbooks
+    filename: "{primary}/index.md"
+    fields: &gallery
+      - { name: title, label: Title, type: string, required: true }
+      - { name: type, label: Type, type: select, options: { values: [gallery, page, post] }, default: gallery }
+      - { name: date, label: Date, type: date }
+      - { name: intro, label: Intro text, type: text }
+      - { name: draft, label: Draft (not published), type: boolean }
+      - { name: unlisted, label: Unlisted (hidden from menus), type: boolean }
+      - name: photos
+        label: Photos (optional — add alt text and captions here)
+        type: object
+        list: true
+        fields:
+          - { name: file, label: Photo, type: image }
+          - { name: alt, label: Alt text (what's in the photo), type: string }
+          - { name: caption, label: Caption, type: string }
+      - { name: body, label: Text, type: rich-text }
+  - { name: adventures, label: Adventures, type: collection, path: src/content/adventures, filename: "{primary}/index.md", fields: *gallery }
+  - { name: film, label: Film, type: collection, path: src/content/film, filename: "{primary}/index.md", fields: *gallery }
+  - { name: blog, label: Blog posts, type: collection, path: src/content/thoughts/blog, filename: "{primary}/index.md", fields: *gallery }
+  - name: about
+    label: About page
+    type: file
+    path: src/content/thoughts/about/index.md
+    fields: *gallery

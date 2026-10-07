@@ -1,0 +1,24 @@
+---
+import Base from "../layouts/Base.astro";
+import Photo from "../components/Photo.astro";
+import { galleries } from "../lib/entries";
+import config from "../site.config.mjs";
+const list = await galleries();
+const label = (folder: string) => config.menu.find((m) => m.folder === folder)?.label ?? "";
+---
+<Base>
+  <header class="page-head">
+    <h1>Photographs by {config.author}</h1>
+  </header>
+  <ul class="index">
+    {list.map((g, i) => (
+      <li>
+        <a href={g.href}>
+          {g.cover && <Photo image={g.cover.image} alt="" eager={i < 3} widths={[600, 1200]} sizes="(min-width: 760px) 360px, 100vw" />}
+          <span class="m">{label(g.folder)} · {g.photos.length} photos</span>
+          <span class="t">{g.title}</span>
+        </a>
+      </li>
+    ))}
+  </ul>
+</Base>

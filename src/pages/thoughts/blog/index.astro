@@ -1,0 +1,22 @@
+---
+import Base from "../../../layouts/Base.astro";
+import { posts, formatDate } from "../../../lib/entries";
+const list = await posts();
+---
+<Base title="live slow, die whenever">
+  <header class="page-head">
+    <p class="eyebrow">Thoughts</p>
+    <h1>live slow, die whenever</h1>
+  </header>
+  {list.length ? (
+    <ul class="posts">
+      {list.map((p) => (
+        <li>
+          {p.date && <time datetime={p.date.toISOString().slice(0, 10)}>{formatDate(p.date)}</time>}
+          <a href={p.href}>{p.title}</a>
+          {p.intro && <span>{p.intro}</span>}
+        </li>
+      ))}
+    </ul>
+  ) : <p class="empty">No posts yet.</p>}
+</Base>

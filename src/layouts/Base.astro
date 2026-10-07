@@ -1,0 +1,38 @@
+---
+import "@fontsource-variable/archivo/wdth.css";
+import "@fontsource/ibm-plex-mono/400.css";
+import "../styles/global.css";
+import SiteNav from "../components/SiteNav.astro";
+import config from "../site.config.mjs";
+
+interface Props { title?: string; description?: string; image?: string }
+const { title, description = `Photographs by ${config.author}.`, image } = Astro.props;
+const fullTitle = title ? `${title} · ${config.name}` : config.name;
+const year = new Date().getFullYear();
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <meta name="robots" content="noai, noimageai" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    {image && <meta property="og:image" content={new URL(image, config.url).href} />}
+    <link rel="alternate" type="application/rss+xml" title={`${config.name} blog`} href="/rss.xml" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <SiteNav />
+    <main id="main" tabindex="-1">
+      <slot />
+    </main>
+    <footer class="site-footer">
+      <p>© {year} {config.author}. All rights reserved.</p>
+      <p><a href={config.instagram} rel="me">Instagram</a></p>
+    </footer>
+  </body>
+</html>

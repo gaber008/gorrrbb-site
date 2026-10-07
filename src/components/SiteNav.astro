@@ -1,0 +1,64 @@
+---
+import { menu } from "../lib/entries";
+import config from "../site.config.mjs";
+const groups = await menu();
+const current = Astro.url.pathname;
+---
+<header class="site-header">
+  <a class="wordmark" href="/">{config.name}</a>
+  <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
+  <nav id="site-nav" class="site-nav" aria-label="Main">
+    <ul class="nav-groups">
+      {groups.map((g, i) => (
+        <li class="nav-group">
+          <button type="button" class="nav-group-btn" aria-expanded="false" aria-controls={`nav-g${i}`}>
+            {g.label}<span class="chev" aria-hidden="true"></span>
+          </button>
+          <ul id={`nav-g${i}`} class="nav-sub" hidden>
+            {g.items.map((it) => (
+              <li><a href={it.href} aria-current={current === it.href ? "page" : undefined}>{it.label}</a></li>
+            ))}
+          </ul>
+        </li>
+      ))}
+    </ul>
+  </nav>
+</header>
+
+<script>
+  // Accessible disclosure menu: buttons toggle their list; Esc and outside clicks close.
+  const header = document.querySelector<HTMLElement>(".site-header")!;
+  const toggle = header.querySelector<HTMLButtonElement>(".menu-toggle")!;
+  const nav = header.querySelector<HTMLElement>(".site-nav")!;
+  const groupBtns = [...header.querySelectorAll<HTMLButtonElement>(".nav-group-btn")];
+
+  function setGroup(btn: HTMLButtonElement, open: boolean) {
+    btn.setAttribute("aria-expanded", String(open));
+    document.getElementById(btn.getAttribute("aria-controls")!)!.hidden = !open;
+  }
+  function closeAll(except?: HTMLButtonElement) {
+    groupBtns.forEach((b) => b !== except && setGroup(b, false));
+  }
+  groupBtns.forEach((btn) =>
+    btn.addEventListener("click", () => {
+      const open = btn.getAttribute("aria-expanded") !== "true";
+      closeAll(btn);
+      setGroup(btn, open);
+    }),
+  );
+  toggle.addEventListener("click", () => {
+    const open = toggle.getAttribute("aria-expanded") !== "true";
+    toggle.setAttribute("aria-expanded", String(open));
+    nav.classList.toggle("is-open", open);
+    if (!open) closeAll();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    const openBtn = groupBtns.find((b) => b.getAttribute("aria-expanded") === "true");
+    if (openBtn) { setGroup(openBtn, false); openBtn.focus(); }
+    else if (nav.classList.contains("is-open")) { toggle.click(); toggle.focus(); }
+  });
+  document.addEventListener("click", (e) => {
+    if (!header.contains(e.target as Node)) closeAll();
+  });
+</script>

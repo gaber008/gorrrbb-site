@@ -1,0 +1,64 @@
+---
+import Base from "../layouts/Base.astro";
+import Photo from "../components/Photo.astro";
+import { allEntries, posts, formatDate } from "../lib/entries";
+import { render } from "astro:content";
+import { getImage } from "astro:assets";
+import config from "../site.config.mjs";
+
+export async function getStaticPaths() {
+  const entries = await allEntries();
+  return entries.map((e) => ({ params: { slug: e.slug }, props: { slug: e.slug } }));
+}
+const all = await allEntries();
+const entry = all.find((e) => e.slug === Astro.props.slug)!;
+const group = config.menu.find((m) => m.folder === entry.folder);
+const Content = entry.raw && (await render(entry.raw)).Content;
+
+// Share image: a resized JPEG (never the original file, which may carry GPS data).
+const og = entry.cover ? (await getImage({ src: entry.cover.image, width: 1200, format: "jpg" })).src : undefined;
+
+let newer, older;
+if (entry.type === "post") {
+  const list = await posts();
+  const i = list.findIndex((p) => p.slug === entry.slug);
+  newer = list[i - 1]; older = list[i + 1];
+}
+---
+<Base title={entry.title} description={entry.intro} image={og}>
+  <header class="page-head">
+    {group && <p class="eyebrow">{group.label}</p>}
+    <h1>{entry.title}</h1>
+    {entry.type === "post" && entry.date && <p class="post-date"><time datetime={entry.date.toISOString().slice(0, 10)}>{formatDate(entry.date)}</time></p>}
+    {entry.intro && <p class="intro">{entry.intro}</p>}
+    {entry.type === "gallery" && <p class="count">{entry.photos.length} photos</p>}
+  </header>
+
+  {entry.type === "gallery" && (
+    <ol class="stack" aria-label={`${entry.title} photos`}>
+      {entry.photos.map((p, i) => (
+        <li>
+          <figure class="shot">
+            <Photo image={p.image} alt={p.alt} eager={i < 2} />
+            {p.caption && <figcaption>{p.caption}</figcaption>}
+          </figure>
+        </li>
+      ))}
+    </ol>
+  )}
+
+  {entry.type === "page" && entry.cover && (
+    <figure class="page-photo"><Photo image={entry.cover.image} alt={entry.cover.alt} eager sizes="(min-width: 760px) 66ch, 100vw" /></figure>
+  )}
+
+  {entry.type !== "gallery" && Content && (
+    <div class="prose"><Content /></div>
+  )}
+
+  {entry.type === "post" && (newer || older) && (
+    <nav class="next-prev" aria-label="More posts">
+      {older && <a href={older.href}><span class="lbl">Older</span><span class="t">{older.title}</span></a>}
+      {newer && <a class="later" href={newer.href}><span class="lbl">Newer</span><span class="t">{newer.title}</span></a>}
+    </nav>
+  )}
+</Base>
